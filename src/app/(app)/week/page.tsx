@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function DailyRedirectPage() {
+export default function WeekRedirectPage() {
   redirect("/");
 }

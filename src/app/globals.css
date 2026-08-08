@@ -1,17 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f3f6f4;
-  --surface: #e8eeea;
-  --wash: #d9e4dc;
-  --ink: #1c2b24;
-  --muted: #5a6b62;
-  --line: #c5d2ca;
-  --accent: #1f6f5b;
-  --warn: #9a5b16;
-  --danger: #8b2e2e;
-  --background: var(--paper);
-  --foreground: var(--ink);
+  --color-bg: #f3f6f4;
+  --color-surface: #ffffff;
+  --color-surface-soft: #eef5f0;
+  --color-ink: #24352c;
+  --color-muted: #7a8b82;
+  --color-line: #dce6e0;
+  --color-accent: #3d9b5f;
+  --color-accent-soft: #e5f4ea;
+  --color-accent-pressed: #2f7a4a;
+
+  --color-status-excellent: #2f7a4a;
+  --color-status-good: #3d9b5f;
+  --color-status-fair: #d4a017;
+  --color-status-fail: #c45c5c;
+  --color-status-empty: #a8b5ae;
+
+  --color-status-excellent-bg: #e5f4ea;
+  --color-status-good-bg: #eef8f1;
+  --color-status-fair-bg: #fbf5e4;
+  --color-status-fail-bg: #f8ecec;
+  --color-status-empty-bg: #f0f3f1;
+
+  --shadow-card: 0 2px 8px rgba(36, 53, 44, 0.06);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+
+  --tap-min: 44px;
+  --btn-h: 48px;
+  --quick-btn-h: 52px;
+  --nav-h: 68px;
+
+  --page-pad-x: 16px;
+  --page-pad-y: 16px;
+  --content-max: 430px;
+  --card-pad: 16px;
+  --section-gap: 14px;
+
+  --paper: var(--color-bg);
+  --surface: var(--color-surface-soft);
+  --wash: var(--color-accent-soft);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --line: var(--color-line);
+  --accent: var(--color-accent);
+  --background: var(--color-bg);
+  --foreground: var(--color-ink);
 }
 
 @theme inline {
@@ -22,17 +59,21 @@
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #d7e8df 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #e7ebe3 0%, transparent 45%),
-    var(--paper);
-  color: var(--ink);
+  background: var(--color-bg);
+  color: var(--color-ink);
   font-family: var(--font-body), "Hiragino Sans", "Noto Sans JP", sans-serif;
   min-height: 100dvh;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+.card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.section-title {
+  color: var(--color-accent);
+  font-size: 0.95rem;
+  font-weight: 600;
 }

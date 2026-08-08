@@ -14,7 +14,13 @@ export default function AppShellLayout({
   return (
     <>
       <AppNav signOutAction={signOutAction} />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-16">
+      <main
+        className="mx-auto w-full flex-1 px-[var(--page-pad-x)] pt-[var(--page-pad-y)]"
+        style={{
+          maxWidth: "var(--content-max)",
+          paddingBottom: "calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px)",
+        }}
+      >
         {children}
       </main>
     </>

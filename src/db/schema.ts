@@ -14,7 +14,11 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const goalStatusEnum = pgEnum("goal_status", ["active", "archived"]);
+export const goalStatusEnum = pgEnum("goal_status", [
+  "active",
+  "completed",
+  "archived",
+]);
 export const roadmapStatusEnum = pgEnum("roadmap_status", [
   "pending",
   "current",
@@ -260,9 +264,63 @@ export const examResults = pgTable("exam_results", {
     .notNull(),
 });
 
+/** 新UI用: 日次の学習分数（判定記号は保存しない） */
+export const studyLogs = pgTable(
+  "study_logs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    logDate: date("log_date").notNull(),
+    studyMinutes: integer("study_minutes").notNull(),
+    goalId: uuid("goal_id").references(() => goals.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("study_logs_user_date_unique").on(table.userId, table.logDate),
+  ],
+);
+
+/** 新UI用: 週ごとの目標テキスト（最大2件想定） */
+export const weeklyGoals = pgTable(
+  "weekly_goals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    goalId: uuid("goal_id")
+      .notNull()
+      .references(() => goals.id),
+    weekStart: date("week_start").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("weekly_goals_user_week_goal_unique").on(
+      table.userId,
+      table.weekStart,
+      table.goalId,
+    ),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   goals: many(goals),
   weeks: many(weeks),
+  studyLogs: many(studyLogs),
+  weeklyGoals: many(weeklyGoals),
 }));
 
 export const goalsRelations = relations(goals, ({ one, many }) => ({
@@ -270,6 +328,7 @@ export const goalsRelations = relations(goals, ({ one, many }) => ({
   roadmapItems: many(roadmapItems),
   milestones: many(milestones),
   examResult: one(examResults),
+  weeklyGoals: many(weeklyGoals),
 }));
 
 export const roadmapItemsRelations = relations(roadmapItems, ({ one }) => ({

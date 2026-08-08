@@ -14,9 +14,8 @@ const body = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "学習コミットメント台帳",
-  description:
-    "遠い試験日を短期の約束へ分解し、計画と現実のずれをごまかせなくする",
+  title: "学習継続",
+  description: "決めた目標に対して、毎日の学習を簡単に記録し継続を可視化する",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

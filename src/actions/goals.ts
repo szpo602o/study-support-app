@@ -40,6 +40,33 @@ export async function createGoal(formData: FormData) {
 
   revalidatePath("/goals");
   revalidatePath("/");
+  revalidatePath("/week");
+}
+
+export async function updateGoal(formData: FormData) {
+  const user = await requireUser();
+  const goalId = String(formData.get("goalId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const examDate = String(formData.get("examDate") ?? "");
+
+  if (!goalId || !title || !examDate) {
+    throw new Error("必須項目が不足しています");
+  }
+
+  const db = getDb();
+  const [goal] = await db.select().from(goals).where(eq(goals.id, goalId));
+  if (!goal || goal.userId !== user.id) {
+    throw new Error("目標が見つかりません");
+  }
+
+  await db
+    .update(goals)
+    .set({ title, examDate })
+    .where(eq(goals.id, goalId));
+
+  revalidatePath("/goals");
+  revalidatePath("/");
+  revalidatePath("/week");
 }
 
 export async function archiveGoal(goalId: string, _formData?: FormData) {
@@ -57,6 +84,7 @@ export async function archiveGoal(goalId: string, _formData?: FormData) {
 
   revalidatePath("/goals");
   revalidatePath("/");
+  revalidatePath("/week");
 }
 
 export async function addRoadmapItem(formData: FormData) {
@@ -205,9 +233,10 @@ export async function recordExamResult(formData: FormData) {
 
   await db
     .update(goals)
-    .set({ status: "archived", archivedAt: new Date() })
+    .set({ status: "completed", archivedAt: new Date() })
     .where(eq(goals.id, goalId));
 
   revalidatePath("/goals");
   revalidatePath("/");
+  revalidatePath("/week");
 }

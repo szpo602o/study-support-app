@@ -21,12 +21,9 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10">
       <div className="mb-8">
-        <p className="mb-2 text-sm tracking-[0.2em] text-[var(--muted)]">
-          STUDY COMMITMENT
-        </p>
-        <h1 className="text-4xl text-[var(--ink)]">コミット台帳</h1>
+        <h1 className="text-3xl font-medium text-[var(--ink)]">学習継続</h1>
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-          自分専用。計画と実績のずれをごまかせなくする。
+          決めた目標に対して、毎日の学習を簡単に記録します。
         </p>
       </div>
       <form action={loginAction} className="space-y-4">

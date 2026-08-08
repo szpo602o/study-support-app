@@ -1,227 +1,204 @@
 import {
-  addRoadmapItem,
   archiveGoal,
   createGoal,
   recordExamResult,
-  setActiveMilestone,
+  updateGoal,
 } from "@/actions/goals";
-import { addDaysToDateString, formatJaDate, todayDateString } from "@/lib/dates";
-import { getGoalBundle, listActiveGoals } from "@/lib/queries";
+import { formatJaDate } from "@/lib/dates";
+import { listActiveGoals } from "@/lib/queries";
 import { requireUser } from "@/lib/session";
 import { getDb } from "@/db";
-import { goals } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { examResults, goals } from "@/db/schema";
+import { and, desc, eq, inArray } from "drizzle-orm";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function GoalsPage() {
   const user = await requireUser();
   const active = await listActiveGoals(user.id);
-  const bundles = await Promise.all(active.map((g) => getGoalBundle(g.id)));
   const db = getDb();
-  const archived = await db
+
+  const others = await db
     .select()
     .from(goals)
-    .where(and(eq(goals.userId, user.id), eq(goals.status, "archived")));
+    .where(
+      and(
+        eq(goals.userId, user.id),
+        inArray(goals.status, ["completed", "archived"]),
+      ),
+    )
+    .orderBy(desc(goals.createdAt));
 
-  const maxDue = addDaysToDateString(todayDateString(), 14);
+  const results = await db.select().from(examResults);
+  const resultByGoal = new Map(results.map((r) => [r.goalId, r]));
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="text-3xl">目標設定</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          アクティブ最大2。削除はできません。終わったら結果を残してアーカイブ。
-        </p>
+    <div className="space-y-[var(--section-gap)]">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-medium text-[var(--color-ink)]">
+            目標の管理
+          </h1>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            資格名・試験日のみ。アクティブは最大2つ。
+          </p>
+        </div>
+        <Link
+          href="/"
+          className="min-h-10 shrink-0 text-sm text-[var(--color-accent)]"
+        >
+          戻る
+        </Link>
       </div>
 
       {active.length < 2 && (
-        <section className="space-y-3 rounded-xl border border-[var(--line)] bg-[var(--paper)] p-4">
-          <h2 className="text-xl">新しい目標</h2>
-          <form action={createGoal} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <input
-              name="title"
-              required
-              placeholder="例: 中小企業診断士一次合格"
-              className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base sm:col-span-2"
-            />
-            <label className="text-sm text-[var(--muted)]">
+        <section className="card space-y-3 p-[var(--card-pad)]">
+          <h2 className="text-sm font-medium">新しい資格目標</h2>
+          <form action={createGoal} className="space-y-3">
+            <label className="block text-xs text-[var(--color-muted)]">
+              名称
+              <input
+                name="title"
+                required
+                placeholder="例: 中小企業診断士試験1次"
+                className="mt-1 h-12 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-base"
+              />
+            </label>
+            <label className="block text-xs text-[var(--color-muted)]">
               試験日
               <input
                 type="date"
                 name="examDate"
                 required
-                className="mt-1 w-full rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base"
+                className="mt-1 h-12 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-base"
               />
             </label>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full rounded-md bg-[var(--ink)] px-4 py-2 text-[var(--paper)]"
-              >
-                追加
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="h-12 w-full rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-sm font-medium text-white"
+            >
+              追加する
+            </button>
           </form>
         </section>
       )}
 
-      {bundles.map((bundle) => {
-        if (!bundle) return null;
-        const { goal, roadmap, milestone } = bundle;
-        return (
-          <section
-            key={goal.id}
-            className="space-y-4 rounded-xl border border-[var(--line)] bg-[var(--paper)]/90 p-4"
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-2xl">{goal.title}</h2>
-                <p className="text-sm text-[var(--muted)]">
-                  試験日 {formatJaDate(goal.examDate)}
-                </p>
-              </div>
-              <form action={archiveGoal.bind(null, goal.id)}>
-                <button
-                  type="submit"
-                  className="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm text-[var(--muted)]"
-                >
-                  アーカイブ（結果なし）
-                </button>
-              </form>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-lg">ロードマップ</h3>
-              <ol className="space-y-2">
-                {roadmap.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex flex-col gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">
-                        {item.sortOrder}. {item.title}
-                      </p>
-                      <p className="text-xs text-[var(--muted)]">
-                        目標日 {formatJaDate(item.targetDate)}
-                        {item.originalTargetDate !== item.targetDate &&
-                          `（当初 ${formatJaDate(item.originalTargetDate)}）`}
-                        · {item.status}
-                      </p>
-                    </div>
-                    <form
-                      action={setActiveMilestone}
-                      className="flex flex-wrap items-end gap-2"
-                    >
-                      <input type="hidden" name="goalId" value={goal.id} />
-                      <input
-                        type="hidden"
-                        name="roadmapItemId"
-                        value={item.id}
-                      />
-                      <label className="text-xs text-[var(--muted)]">
-                        中間期限
-                        <input
-                          type="date"
-                          name="dueDate"
-                          required
-                          max={maxDue}
-                          defaultValue={maxDue}
-                          className="mt-1 block rounded-md border border-[var(--line)] bg-[var(--paper)] px-2 py-1.5 text-base"
-                        />
-                      </label>
-                      <button
-                        type="submit"
-                        className="rounded-md bg-[var(--accent)] px-3 py-2 text-sm text-white"
-                      >
-                        フォーカスにする
-                      </button>
-                    </form>
-                  </li>
-                ))}
-              </ol>
-
-              {roadmap.length < 10 && (
-                <form
-                  action={addRoadmapItem}
-                  className="grid grid-cols-1 gap-2 rounded-lg border border-dashed border-[var(--line)] p-3 sm:grid-cols-3"
-                >
-                  <input type="hidden" name="goalId" value={goal.id} />
-                  <input
-                    type="hidden"
-                    name="sortOrder"
-                    value={roadmap.length + 1}
-                  />
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-[var(--color-ink)]">
+          アクティブ
+        </h2>
+        {active.length === 0 ? (
+          <div className="card p-[var(--card-pad)]">
+            <p className="text-sm text-[var(--color-muted)]">
+              アクティブな目標はありません
+            </p>
+          </div>
+        ) : (
+          active.map((goal) => (
+            <article key={goal.id} className="card space-y-4 p-[var(--card-pad)]">
+              <form action={updateGoal} className="space-y-3">
+                <input type="hidden" name="goalId" value={goal.id} />
+                <label className="block text-xs text-[var(--color-muted)]">
+                  名称
                   <input
                     name="title"
                     required
-                    placeholder="段階名"
-                    className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base sm:col-span-2"
+                    defaultValue={goal.title}
+                    className="mt-1 h-12 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-base"
                   />
+                </label>
+                <label className="block text-xs text-[var(--color-muted)]">
+                  試験日
                   <input
                     type="date"
-                    name="targetDate"
+                    name="examDate"
                     required
-                    className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base"
+                    defaultValue={goal.examDate}
+                    className="mt-1 h-12 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-base"
                   />
+                </label>
+                <button
+                  type="submit"
+                  className="h-11 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] text-sm font-medium"
+                >
+                  保存
+                </button>
+              </form>
+
+              <details className="rounded-[var(--radius-sm)] bg-[var(--color-surface-soft)] p-3">
+                <summary className="cursor-pointer text-sm text-[var(--color-muted)]">
+                  試験結果を登録して完了
+                </summary>
+                <form action={recordExamResult} className="mt-3 space-y-3">
+                  <input type="hidden" name="goalId" value={goal.id} />
+                  <label className="block text-xs text-[var(--color-muted)]">
+                    結果
+                    <select
+                      name="passed"
+                      className="mt-1 h-11 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-sm"
+                    >
+                      <option value="true">合格</option>
+                      <option value="false">不合格</option>
+                    </select>
+                  </label>
+                  <label className="block text-xs text-[var(--color-muted)]">
+                    点数（任意）
+                    <input
+                      name="score"
+                      inputMode="decimal"
+                      className="mt-1 h-11 w-full rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 text-sm"
+                    />
+                  </label>
                   <button
                     type="submit"
-                    className="rounded-md border border-[var(--line)] px-3 py-2 text-sm sm:col-span-3"
+                    className="h-11 w-full rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-sm font-medium text-white"
                   >
-                    段階を追加
+                    完了にする
                   </button>
                 </form>
-              )}
-            </div>
+              </details>
 
-            {milestone && (
-              <p className="text-sm">
-                現在の中間目標: ロードマップ項目 · 期限{" "}
-                {formatJaDate(milestone.dueDate)} · {milestone.status}
-              </p>
-            )}
+              <form action={archiveGoal.bind(null, goal.id)}>
+                <button
+                  type="submit"
+                  className="w-full py-2 text-sm text-[var(--color-muted)]"
+                >
+                  結果なしでアーカイブ
+                </button>
+              </form>
+            </article>
+          ))
+        )}
+      </section>
 
-            <form
-              action={recordExamResult}
-              className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 sm:grid-cols-4"
-            >
-              <input type="hidden" name="goalId" value={goal.id} />
-              <p className="text-sm font-medium sm:col-span-4">試験結果を記録</p>
-              <select
-                name="passed"
-                className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base"
-                defaultValue="true"
+      {others.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-[var(--color-ink)]">
+            完了・アーカイブ
+          </h2>
+          {others.map((goal) => {
+            const result = resultByGoal.get(goal.id);
+            return (
+              <article
+                key={goal.id}
+                className="card p-[var(--card-pad)] text-sm"
               >
-                <option value="true">合格</option>
-                <option value="false">不合格</option>
-              </select>
-              <input
-                name="score"
-                placeholder="点数（任意）"
-                className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-base"
-              />
-              <button
-                type="submit"
-                className="rounded-md bg-[var(--ink)] px-3 py-2 text-sm text-[var(--paper)] sm:col-span-2"
-              >
-                結果を残してアーカイブ
-              </button>
-            </form>
-          </section>
-        );
-      })}
-
-      {archived.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-xl">アーカイブ</h2>
-          <ul className="space-y-2 text-sm text-[var(--muted)]">
-            {archived.map((g) => (
-              <li key={g.id}>
-                {g.title} · 試験日 {formatJaDate(g.examDate)}
-              </li>
-            ))}
-          </ul>
+                <p className="font-medium text-[var(--color-ink)]">
+                  {goal.title}
+                </p>
+                <p className="mt-1 text-[var(--color-muted)]">
+                  試験日 {formatJaDate(goal.examDate)} · {goal.status}
+                </p>
+                {result && (
+                  <p className="mt-1 text-[var(--color-muted)]">
+                    {result.passed ? "合格" : "不合格"}
+                    {result.score != null ? ` · ${result.score}` : ""}
+                  </p>
+                )}
+              </article>
+            );
+          })}
         </section>
       )}
     </div>
