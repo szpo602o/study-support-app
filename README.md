@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 学習コミットメントアプリ
 
-## Getting Started
+自分専用の「自己コミットメント台帳」。  
+遠い試験日を短期の約束へ分解し、計画と現実のずれをごまかせなくする。
 
-First, run the development server:
+## 技術構成
+
+| 層 | 採用 |
+|----|------|
+| アプリ／デプロイ | **Next.js on Vercel** |
+| DB（台帳の記憶） | **Neon（Postgres）+ Drizzle** |
+| 認証 | Auth.js（単一ユーザー・パスワード） |
+
+## セットアップ
+
+1. Neon でデータベースを作成し、接続文字列を用意する
+2. `.env.local` を作成（`.env.example` を参照）
+
+```bash
+cp .env.example .env.local
+```
+
+| 変数 | 意味 |
+|------|------|
+| `DATABASE_URL` | Neon の接続 URL |
+| `AUTH_SECRET` | `openssl rand -base64 32` などで生成 |
+| `APP_EMAIL` | 利用者のメール（users 行のキー） |
+| `APP_PASSWORD` | ログイン用パスワード |
+
+3. スキーマを反映
+
+```bash
+npm run db:push
+```
+
+4. 開発サーバー
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 画面
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| パス | 内容 |
+|------|------|
+| `/` | 今週の一枚（目標・中間目標・当初タスク・差分） |
+| `/daily` | 日次入力（スマホ最優先） |
+| `/review` | 週次レビュー＋確定ロック |
+| `/goals` | 目標・ロードマップ・中間目標・試験結果 |
+| `/history` | 週単位の履歴カード |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ドキュメント
 
-## Learn More
+| ファイル | 内容 |
+|----------|------|
+| [docs/02-運用リハーサル.md](docs/02-運用リハーサル.md) | 運用手順の参照 |
+| [docs/03-MVPデータモデル.md](docs/03-MVPデータモデル.md) | テーブル・不変条件 |
 
-To learn more about Next.js, take a look at the following resources:
+## まだ後回し
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Web Push 通知（`users.daily_notify_at` はスキーマのみ）
+- Vercel 本番デプロイ手順の自動化
