@@ -57,5 +57,6 @@ export async function saveStudyLog(input: {
   revalidatePath("/week");
   revalidatePath("/history");
   revalidatePath("/reflect");
+  revalidatePath("/grades");
   return { ok: true as const };
 }

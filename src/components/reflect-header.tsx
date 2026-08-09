@@ -11,9 +11,7 @@ export function ReflectHeader({
 }) {
   return (
     <header className="flex items-center justify-between gap-3">
-      <h1 className="text-xl font-semibold tracking-tight text-[var(--color-ink)]">
-        振り返り
-      </h1>
+      <h1 className="notebook-title text-xl tracking-tight">振り返り</h1>
       <div className="flex items-center gap-1 text-sm text-[var(--color-muted)]">
         <Link
           href={`/reflect?month=${prevMonthKey}`}

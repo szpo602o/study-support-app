@@ -28,7 +28,7 @@ export function ReflectMetricCards({
       {items.map((item, index) => (
         <div
           key={item.label}
-          className={`card px-3 py-3 ${
+          className={`report-card px-3 py-3 ${
             index === 2 ? "col-span-2 sm:col-span-1" : ""
           }`}
         >

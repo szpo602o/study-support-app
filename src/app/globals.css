@@ -1,33 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f3f6f4;
-  --color-surface: #ffffff;
-  --color-surface-soft: #eef5f0;
+  /* 紙・背景 */
+  --color-bg: #f6f3ea;
+  --color-surface: #faf8f2;
+  --color-surface-soft: #f0ebe0;
   --color-ink: #24352c;
-  --color-muted: #7a8b82;
-  --color-line: #dce6e0;
-  --color-accent: #3d9b5f;
-  --color-accent-soft: #e5f4ea;
-  --color-accent-pressed: #2f7a4a;
+  --color-muted: #6f7d74;
+  --color-line: #d9d2c4;
 
-  --color-status-excellent: #2f7a4a;
-  --color-status-good: #3d9b5f;
-  --color-status-fair: #d4a017;
-  --color-status-fail: #c45c5c;
-  --color-status-empty: #a8b5ae;
+  /* 黒板グリーン（メイン）＋活きたサブ緑 */
+  --color-chalkboard: #174c38;
+  --color-chalkboard-mid: #1f5a43;
+  --color-chalkboard-light: #256348;
+  --color-accent: #2f7a4a;
+  --color-accent-soft: #e5efe8;
+  --color-accent-pressed: #174c38;
 
-  --color-status-excellent-bg: #e5f4ea;
-  --color-status-good-bg: #eef8f1;
-  --color-status-fair-bg: #fbf5e4;
-  --color-status-fail-bg: #f8ecec;
-  --color-status-empty-bg: #f0f3f1;
+  /* アクセント（赤鉛筆・朱肉・テープ） */
+  --color-pencil-red: #b54a3a;
+  --color-pencil-red-soft: #f3e4df;
+  --color-tape: #e8d9a8;
+  --color-cork: #c4a882;
+  --color-cork-bg: #e8dcc8;
+  --color-wood: #c4a574;
 
-  --shadow-card: 0 2px 8px rgba(36, 53, 44, 0.06);
+  --color-status-excellent: #174c38;
+  --color-status-good: #2f7a4a;
+  --color-status-fair: #b08a2e;
+  --color-status-fail: #b54a3a;
+  --color-status-empty: #9aa39c;
 
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
+  --color-status-excellent-bg: #e5efe8;
+  --color-status-good-bg: #eef5f0;
+  --color-status-fair-bg: #f8f3e6;
+  --color-status-fail-bg: #f3e4df;
+  --color-status-empty-bg: #f0ebe0;
+
+  /* 週次・過去問の A〜E（日次◎○△×とは別系統） */
+  --color-grade-a: #174c38;
+  --color-grade-b: #2f7a4a;
+  --color-grade-c: #b08a2e;
+  --color-grade-d: #b07a4a;
+  --color-grade-e: #8a7a72;
+  --color-grade-a-bg: #e5efe8;
+  --color-grade-b-bg: #eef5f0;
+  --color-grade-c-bg: #f8f3e6;
+  --color-grade-d-bg: #f6eee6;
+  --color-grade-e-bg: #f2efed;
+  --color-warn-soft: #8a6a3d;
+  --color-warn-soft-bg: #f7f1e6;
+  --color-stamp: #b54a3a;
+
+  --shadow-card: 0 2px 6px rgba(36, 53, 44, 0.07);
+  --shadow-board: 0 2px 4px rgba(23, 76, 56, 0.18);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
 
   --tap-min: 44px;
   --btn-h: 48px;
@@ -59,13 +89,21 @@
 }
 
 body {
-  background: var(--color-bg);
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 50% -20%,
+      rgba(196, 168, 130, 0.12),
+      transparent 55%
+    ),
+    var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-body), "Hiragino Sans", "Noto Sans JP", sans-serif;
   min-height: 100dvh;
 }
 
+/* ── 基本カード（プリント／紙） ── */
 .card {
+  position: relative;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-line);
   background: var(--color-surface);
@@ -73,7 +111,606 @@ body {
 }
 
 .section-title {
-  color: var(--color-accent);
-  font-size: 0.95rem;
+  color: var(--color-chalkboard);
+  font-family: var(--font-display), "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.08rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+}
+
+/* 鉛筆で引いたような、わずかに柔らかい下線 */
+.section-title-underline {
+  position: relative;
+  display: inline-block;
+  border-bottom: none;
+  padding-bottom: 5px;
+}
+
+.section-title-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 6%;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in oklab, var(--color-chalkboard) 42%, transparent);
+  border-radius: 1px 40% 55% 2px / 1px 80% 40% 2px;
+  transform: rotate(-0.6deg);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+/* ── 装飾パーツ（共通） ── */
+.masking-tape {
+  position: absolute;
+  z-index: 2;
+  width: 42px;
+  height: 14px;
+  border-radius: 1px;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 4%,
+      color-mix(in oklab, white 18%, transparent) 8%,
+      transparent 14%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 35%, transparent) 0%,
+      transparent 45%,
+      color-mix(in oklab, black 6%, transparent) 100%
+    ),
+    color-mix(in oklab, var(--color-tape) 82%, white);
+  box-shadow: 0 1px 2px rgba(36, 53, 44, 0.12);
+  opacity: 0.88;
+}
+
+.masking-tape--green {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 30%, transparent) 0%,
+      transparent 50%,
+      color-mix(in oklab, black 5%, transparent) 100%
+    ),
+    color-mix(in oklab, #c5d9c8 78%, white);
+}
+
+.masking-tape--cream {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 40%, transparent) 0%,
+      transparent 50%,
+      color-mix(in oklab, black 5%, transparent) 100%
+    ),
+    color-mix(in oklab, #efe6d2 85%, white);
+}
+
+.paper-clip {
+  display: inline-block;
+  width: 14px;
+  height: 22px;
+  border: 2px solid var(--color-pencil-red);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  position: relative;
+  opacity: 0.78;
+  pointer-events: none;
+  transform: rotate(12deg);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-pencil-red) 25%, transparent);
+}
+
+.paper-clip::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 5px;
+  bottom: -6px;
+  border: 1.5px solid color-mix(in oklab, var(--color-pencil-red) 75%, #8a3a2e);
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+}
+
+.folded-corner {
+  position: relative;
+  overflow: hidden;
+}
+
+.folded-corner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: transparent #ebe4d4 transparent transparent;
+  filter: drop-shadow(-0.5px 0.5px 0.5px rgba(36, 53, 44, 0.08));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.folded-corner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 11px 11px 0;
+  border-color: transparent color-mix(in oklab, var(--color-line) 70%, #d8cfc0) transparent transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.decor-pencil {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  opacity: 0.28;
+  color: var(--color-chalkboard);
+  pointer-events: none;
+  transform: rotate(-18deg);
+  z-index: 0;
+}
+
+/* ── 掲示プリント（画鋲＋テープ） ── */
+.paper-card {
+  position: relative;
+  /* 貼った紙らしい、わずかに不均一な角 */
+  border-radius: 13px 11px 14px 12px;
+  border: 1px solid color-mix(in oklab, var(--color-line) 88%, #c9bda8);
+  background:
+    linear-gradient(
+      165deg,
+      #fcfaf4 0%,
+      #f7f2e6 48%,
+      #f3ecdc 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 2px 5px rgba(36, 53, 44, 0.07),
+    1px 3px 8px rgba(36, 53, 44, 0.04);
+}
+
+/* 右上：緑の画鋲 */
+.paper-card::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #3d8f5c 0%,
+    var(--color-chalkboard) 55%,
+    #0f3326 100%
+  );
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 左上：マスキングテープ */
+.paper-card::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 18px;
+  width: 46px;
+  height: 15px;
+  border-radius: 1px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 38%, transparent) 0%,
+      transparent 48%,
+      color-mix(in oklab, black 6%, transparent) 100%
+    ),
+    color-mix(in oklab, #d5e3d4 72%, white);
+  opacity: 0.86;
+  transform: rotate(-7deg);
+  box-shadow: 0 1px 2px rgba(36, 53, 44, 0.1);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.paper-card > * {
+  position: relative;
+  z-index: 0;
+}
+
+/* ── 小さな黒板 ── */
+.chalkboard {
+  position: relative;
+  border-radius: 7px;
+  border: 2.5px solid #b8955f;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-chalkboard-light) 88%, white 12%) 0%,
+      var(--color-chalkboard) 55%,
+      #123528 100%
+    );
+  color: #f4f1e8;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, #8a6a3a 55%, transparent),
+    inset 0 1px 0 color-mix(in oklab, white 12%, transparent),
+    inset 0 -10px 0 -7px color-mix(in oklab, #1a3f30 70%, black),
+    0 2px 5px rgba(23, 76, 56, 0.22);
+  min-width: 0;
+}
+
+/* 下部：細いチョーク受け */
+.chalkboard::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in oklab, #c4a574 55%, transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.chalkboard-pin {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #f0c060, #d4890a 70%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 黒板のチョーク風数字（可読性は維持） */
+.chalk-number {
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #f4f1e8;
+  text-shadow:
+    0 0 0.5px rgba(244, 241, 232, 0.55),
+    0.4px 0.6px 0 rgba(244, 241, 232, 0.22);
+}
+
+.chalk-caption {
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: color-mix(in oklab, #f4f1e8 82%, transparent);
+}
+
+/* ── ノート（横罫）＋クリップ ── */
+.notebook-card {
+  position: relative;
+  border-radius: 12px 14px 11px 13px;
+  border: 1px solid color-mix(in oklab, var(--color-line) 90%, #cfc4b0);
+  background:
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      color-mix(in oklab, var(--color-chalkboard) 9%, transparent) 27px,
+      color-mix(in oklab, var(--color-chalkboard) 9%, transparent) 28px
+    ),
+    linear-gradient(90deg, #ebe3d0 0 14px, transparent 14px),
+    #f8f4ea;
+  background-size: 100% 28px, 100% 100%, 100% 100%;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 2px 6px rgba(36, 53, 44, 0.06);
+  overflow: visible;
+}
+
+.notebook-card::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 13px;
+  width: 1px;
+  background: color-mix(in oklab, var(--color-pencil-red) 35%, transparent);
+  pointer-events: none;
+}
+
+.notebook-memo {
+  position: relative;
+  border-radius: 3px 7px 4px 6px;
+  border: 1px solid color-mix(in oklab, var(--color-line) 75%, #cfc3ae);
+  background: linear-gradient(180deg, #fffcf5 0%, #f5efe3 100%);
+  box-shadow:
+    0 1px 2px rgba(36, 53, 44, 0.07),
+    0 0.5px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+.notebook-memo:nth-child(even) {
+  background: linear-gradient(180deg, #fbf7ec 0%, #f1eadc 100%);
+}
+
+/* ── 学習記録帳 ── */
+.record-book-card {
+  position: relative;
+  border-radius: 11px 13px 12px 10px;
+  border: 1px solid color-mix(in oklab, var(--color-line) 85%, #c8bba5);
+  border-left: 3px solid color-mix(in oklab, var(--color-chalkboard) 28%, var(--color-line));
+  background:
+    repeating-linear-gradient(
+      transparent,
+      transparent 23px,
+      color-mix(in oklab, var(--color-line) 60%, transparent) 23px,
+      color-mix(in oklab, var(--color-line) 60%, transparent) 24px
+    ),
+    linear-gradient(180deg, #fbf8f0 0%, #f4efe4 100%);
+  background-size: 100% 24px, 100% 100%;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 2px 6px rgba(36, 53, 44, 0.06);
+}
+
+.sticky-label {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 1px 2px 1px 2px;
+  background: linear-gradient(180deg, #f7ec9e 0%, #efd978 100%);
+  color: #6e5c2e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.28rem 0.6rem 0.22rem;
+  box-shadow:
+    0 1px 3px rgba(36, 53, 44, 0.12),
+    0 0.5px 0 rgba(255, 255, 255, 0.45) inset;
+  transform: rotate(-2deg);
+  border: 1px solid color-mix(in oklab, #d4c06a 45%, transparent);
+}
+
+/* ── コルク／クラフト週間掲示（テープ1枚＋判定印） ── */
+.cork-card {
+  position: relative;
+  border-radius: 12px 10px 13px 11px;
+  border: 1px solid color-mix(in oklab, var(--color-cork) 55%, var(--color-line));
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      color-mix(in oklab, white 12%, transparent) 0 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      color-mix(in oklab, black 4%, transparent) 0 0.8px,
+      transparent 1.2px
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-cork-bg) 92%, white) 0%,
+      var(--color-cork-bg) 50%,
+      color-mix(in oklab, var(--color-cork) 18%, var(--color-cork-bg)) 100%
+    );
+  background-size: 18px 18px, 22px 22px, 100% 100%;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 2px 6px rgba(36, 53, 44, 0.07);
+}
+
+/* 左上テープのみ（右は判定印側で余白） */
+.cork-card::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 12px;
+  width: 34px;
+  height: 12px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 35%, transparent) 0%,
+      transparent 50%,
+      color-mix(in oklab, black 6%, transparent) 100%
+    ),
+    color-mix(in oklab, var(--color-tape) 86%, white);
+  opacity: 0.9;
+  transform: rotate(-8deg);
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.cork-card::after {
+  content: none;
+}
+
+.day-slip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 3px 4px 3px 4px;
+  border: 1px solid color-mix(in oklab, var(--color-line) 70%, transparent);
+  background: linear-gradient(180deg, #fffcf7 0%, #f7f1e6 100%);
+  padding: 0.45rem 0.15rem;
+  box-shadow: 0 1px 2px rgba(36, 53, 44, 0.07);
+  min-width: 0;
+}
+
+/* ── 判定印 ── */
+.grade-stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.15rem;
+  min-height: 2.5rem;
+  padding: 0.22rem 0.5rem 0.18rem;
+  border: 1.5px solid var(--color-stamp);
+  border-radius: 3px 5px 4px 3px;
+  color: var(--color-stamp);
+  background: color-mix(in oklab, var(--color-stamp) 5%, transparent);
+  line-height: 1.05;
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+  transform: rotate(-1.2deg);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--color-stamp) 28%, transparent),
+    0 1px 1px color-mix(in oklab, var(--color-stamp) 8%, transparent);
+}
+
+.grade-stamp-letter {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.grade-stamp-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.grade-stamp--soft {
+  border-color: currentColor;
+  background: color-mix(in oklab, currentColor 7%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, currentColor 25%, transparent),
+    0 1px 1px color-mix(in oklab, currentColor 6%, transparent);
+}
+
+/* 成績表の大きな総合判定文字 */
+.grade-mark-xl {
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-shadow: 0.5px 0.5px 0 color-mix(in oklab, currentColor 12%, transparent);
+}
+
+.school-label {
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+/* ── 黒板ボタン ── */
+.btn-chalkboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-h);
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(
+    180deg,
+    var(--color-chalkboard-light) 0%,
+    var(--color-chalkboard) 100%
+  );
+  color: #f4f1e8;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(23, 76, 56, 0.28);
+}
+
+.btn-chalkboard:disabled {
+  opacity: 0.6;
+}
+
+.btn-chalkboard-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-h);
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-chalkboard);
+  background: var(--color-surface);
+  color: var(--color-chalkboard);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.edit-pencil {
+  color: var(--color-pencil-red);
+  font-weight: 500;
+  font-family: var(--font-body), "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+/* ── 通知表・評価欄 ── */
+.report-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  border: 1.5px solid color-mix(in oklab, var(--color-chalkboard) 22%, var(--color-line));
+  background: linear-gradient(180deg, #fbf9f3 0%, #f6f2e8 100%);
+  box-shadow: var(--shadow-card);
+}
+
+.report-table-wrap {
+  border-radius: var(--radius-md);
+  border: 1.5px solid color-mix(in oklab, var(--color-chalkboard) 22%, var(--color-line));
+  background: #faf8f2;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.notebook-title {
+  font-family: var(--font-display), "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-ink);
+  position: relative;
+  display: inline-block;
+  border-bottom: none;
+  padding-bottom: 5px;
+}
+
+.notebook-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 4%;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in oklab, var(--color-chalkboard) 45%, transparent);
+  border-radius: 1px 45% 50% 2px / 1px 70% 45% 2px;
+  transform: rotate(-0.5deg);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.calendar-grid-lines {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-line) 45%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-line) 45%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: calc(100% / 7) 2.5rem;
+}
+
+/* 下部ナビ（学校手帳） */
+.nav-schoolbook {
+  background: linear-gradient(
+    180deg,
+    var(--color-chalkboard-mid) 0%,
+    var(--color-chalkboard) 100%
+  );
+  border-top: 1px solid color-mix(in oklab, var(--color-chalkboard) 80%, black);
+  box-shadow: 0 -2px 10px rgba(23, 76, 56, 0.18);
 }

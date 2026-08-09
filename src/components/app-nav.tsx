@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { IconChart, IconHome } from "@/components/icons";
+import { IconChart, IconHome, IconReportCard } from "@/components/icons";
 
 const tabs = [
   { href: "/", label: "ホーム", Icon: IconHome },
   { href: "/reflect", label: "振り返り", Icon: IconChart },
+  { href: "/grades", label: "成績表", Icon: IconReportCard },
 ] as const;
 
 export function AppNav({
@@ -64,10 +65,10 @@ export function AppNav({
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--color-line)] bg-[var(--color-surface)]"
+        className="nav-schoolbook fixed inset-x-0 bottom-0 z-20"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto grid h-[var(--nav-h)] max-w-[var(--content-max)] grid-cols-2">
+        <div className="mx-auto grid h-[var(--nav-h)] max-w-[var(--content-max)] grid-cols-3">
           {tabs.map((tab) => {
             const active =
               tab.href === "/"
@@ -80,14 +81,17 @@ export function AppNav({
                 href={tab.href}
                 className={`relative flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${
                   active
-                    ? "text-[var(--color-accent)]"
-                    : "text-[var(--color-muted)]"
+                    ? "text-[#f4f1e8]"
+                    : "text-[color-mix(in_oklab,#f4f1e8_62%,transparent)]"
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span>{tab.label}</span>
                 {active && (
-                  <span className="absolute bottom-1.5 h-0.5 w-8 rounded-full bg-[var(--color-accent)]" />
+                  <span className="absolute inset-x-3 top-1.5 bottom-1.5 rounded-md bg-[color-mix(in_oklab,white_12%,transparent)]" />
+                )}
+                <Icon className="relative z-[1] h-5 w-5" />
+                <span className="relative z-[1]">{tab.label}</span>
+                {active && (
+                  <span className="absolute bottom-1.5 z-[1] h-0.5 w-8 rounded-full bg-[#f4f1e8]" />
                 )}
               </Link>
             );

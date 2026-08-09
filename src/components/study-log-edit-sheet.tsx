@@ -1,34 +1,42 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { saveStudyLog } from "@/actions/study";
-import { IconCalendar, IconInfo, IconPencil } from "@/components/icons";
-import { formatMinutes } from "@/lib/labels";
 import {
   QUICK_MINUTES,
   ratingCssVar,
   studyRatingMessage,
 } from "@/lib/study-rating";
 
-export function TodayRecordCard({
+export function StudyLogEditSheet({
+  open,
   logDate,
   dateLabel,
   initialMinutes,
+  onClose,
 }: {
+  open: boolean;
   logDate: string;
   dateLabel: string;
   initialMinutes: number | null;
+  onClose: () => void;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [minutes, setMinutes] = useState<number | null>(initialMinutes);
-  const [draft, setDraft] = useState<number>(initialMinutes ?? 60);
+  const [draft, setDraft] = useState(initialMinutes ?? 60);
   const [custom, setCustom] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const display = studyRatingMessage(minutes);
+  useEffect(() => {
+    if (!open) return;
+    setDraft(initialMinutes ?? 60);
+    setCustom("");
+    setError(null);
+  }, [open, initialMinutes, logDate]);
+
+  if (!open) return null;
+
   const preview = studyRatingMessage(draft);
 
   function applyQuick(value: number) {
@@ -44,9 +52,7 @@ export function TodayRecordCard({
         setError(result.error);
         return;
       }
-      setMinutes(value);
-      setDraft(value);
-      setOpen(false);
+      onClose();
       router.refresh();
     });
   }
@@ -61,80 +67,44 @@ export function TodayRecordCard({
   }
 
   return (
-    <section className="record-book-card p-4 pb-7">
-      <IconPencil className="decor-pencil h-5 w-5" />
-      <div className="relative z-[1] flex items-center justify-between gap-2">
-        <h2 className="section-title section-title-underline">今日の記録</h2>
-        <p className="flex items-center gap-1 text-xs text-[var(--color-muted)]">
-          <IconCalendar className="h-3.5 w-3.5" />
-          {dateLabel}
-        </p>
-      </div>
-
-      {!open && minutes === null && (
-        <div className="relative z-[1] mt-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="sticky-label">未入力</span>
-            <span className="text-sm text-[var(--color-muted)]">
-              まだ記録がありません
-            </span>
-          </div>
-          <button type="button" onClick={() => setOpen(true)} className="btn-chalkboard">
-            入力を開く ＞
-          </button>
-          <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-[var(--color-muted)]">
-            <IconInfo className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            タップすると記録入力画面が開きます
-          </p>
-        </div>
-      )}
-
-      {!open && minutes !== null && (
-        <div className="relative z-[1] mt-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className="rounded-sm px-2.5 py-1 text-xs font-medium"
-              style={{
-                color: ratingCssVar(display.rating),
-                backgroundColor:
-                  display.rating === "doubleCircle"
-                    ? "var(--color-status-excellent-bg)"
-                    : display.rating === "circle"
-                      ? "var(--color-status-good-bg)"
-                      : display.rating === "triangle"
-                        ? "var(--color-status-fair-bg)"
-                        : "var(--color-status-fail-bg)",
-              }}
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+      <button
+        type="button"
+        className="absolute inset-0 bg-[color-mix(in_oklab,var(--color-ink)_35%,transparent)]"
+        aria-label="閉じる"
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="study-log-edit-title"
+        className="relative z-10 w-full max-w-[var(--content-max)] rounded-t-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:rounded-[var(--radius-lg)]"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2
+              id="study-log-edit-title"
+              className="section-title"
             >
-              {display.label} {display.message}
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <p className="text-[32px] font-bold tabular-nums leading-none text-[var(--color-ink)]">
-              {formatMinutes(minutes)}
+              {initialMinutes === null ? "記録を入力" : "記録を修正"}
+            </h2>
+            <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+              {dateLabel}
             </p>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: ratingCssVar(display.rating) }}
-            >
-              {display.label}
-            </span>
           </div>
           <button
             type="button"
-            onClick={() => setOpen(true)}
-            className="btn-chalkboard-outline"
+            onClick={onClose}
+            className="text-sm text-[var(--color-muted)]"
           >
-            修正する ＞
+            閉じる
           </button>
         </div>
-      )}
 
-      {open && (
-        <div className="relative z-[1] mt-4 space-y-3">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="mt-4 space-y-4">
+          <div className="flex items-baseline gap-2">
             <span
-              className="text-2xl font-bold leading-none"
+              className="text-2xl font-bold"
               style={{ color: ratingCssVar(preview.rating) }}
             >
               {preview.label}
@@ -198,19 +168,11 @@ export function TodayRecordCard({
             {pending ? "保存中…" : "保存"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="w-full py-2 text-sm text-[var(--color-muted)]"
-          >
-            閉じる
-          </button>
-
           {error && (
             <p className="text-sm text-[var(--color-status-fail)]">{error}</p>
           )}
         </div>
-      )}
-    </section>
+      </div>
+    </div>
   );
 }

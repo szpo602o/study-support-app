@@ -54,31 +54,37 @@ export function WeeklyGoalsCard({
   const displayRows = initial.length > 0 ? initial : [];
 
   return (
-    <section className="card p-4">
+    <section className="notebook-card p-4 pl-6 pt-5">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="section-title">今週の目標</h2>
+        <h2 className="section-title section-title-underline">今週の目標</h2>
         {goals.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              if (!editing) {
-                setRows(
-                  (initial.length > 0
-                    ? initial
-                    : goals.slice(0, 2).map((g) => ({
-                        goalId: g.id,
-                        content: "",
-                        goalTitle: g.title,
-                      }))
-                  ).slice(0, 2),
-                );
-              }
-              setEditing((v) => !v);
-            }}
-            className="min-h-9 px-1 text-xs font-medium text-[var(--color-accent)]"
-          >
-            {editing ? "キャンセル" : compactEdit ? "編集" : "編集"}
-          </button>
+          <div className="relative flex items-center pr-3">
+            <span
+              className="paper-clip absolute -right-1 -top-4 z-[2]"
+              aria-hidden
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (!editing) {
+                  setRows(
+                    (initial.length > 0
+                      ? initial
+                      : goals.slice(0, 2).map((g) => ({
+                          goalId: g.id,
+                          content: "",
+                          goalTitle: g.title,
+                        }))
+                    ).slice(0, 2),
+                  );
+                }
+                setEditing((v) => !v);
+              }}
+              className="edit-pencil relative z-[1] min-h-9 px-1 text-xs"
+            >
+              {editing ? "キャンセル" : compactEdit ? "編集" : "編集"}
+            </button>
+          </div>
         )}
       </div>
 
@@ -94,7 +100,7 @@ export function WeeklyGoalsCard({
               return (
                 <div
                   key={`${row.goalId}-${i}`}
-                  className="flex items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-3"
+                  className="notebook-memo folded-corner flex items-center gap-3 px-3 py-3"
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-xs font-bold text-white">
                     {i + 1}
@@ -211,7 +217,7 @@ export function WeeklyGoalsCard({
             type="button"
             disabled={pending}
             onClick={save}
-            className="h-12 w-full rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-sm font-medium text-white disabled:opacity-60"
+            className="btn-chalkboard disabled:opacity-60"
           >
             {pending ? "保存中…" : "保存する"}
           </button>

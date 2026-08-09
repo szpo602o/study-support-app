@@ -3,11 +3,15 @@ import { TodayRecordCard } from "@/components/today-record-card";
 import { WeekProgressCard } from "@/components/week-progress-card";
 import { WeeklyGoalsCard } from "@/components/weekly-goals-card";
 import { formatJaDate, formatJaMonthDay, todayDateString } from "@/lib/dates";
+import { gradeFromDailyAverageMinutes } from "@/lib/letter-grade";
 import {
+  averageDailyMinutesThroughToday,
+  buildExamScoreboard,
   ensureStudyLogsBackfilled,
   getCurrentWeekContext,
   getStudyLogForDate,
   listActiveGoals,
+  listExamScores,
 } from "@/lib/queries";
 import { requireUser } from "@/lib/session";
 
@@ -21,7 +25,17 @@ export default async function TodayPage() {
   const activeGoals = await listActiveGoals(user.id);
   const week = await getCurrentWeekContext(user.id);
   const todayLog = await getStudyLogForDate(user.id, today);
+  const examRows = await listExamScores(user.id);
+  const board = buildExamScoreboard(
+    examRows.map((r) => ({
+      year: r.year,
+      subject: r.subject,
+      score: r.score,
+    })),
+  );
 
+  const avgMinutes = averageDailyMinutesThroughToday(week.dayRatings, today);
+  const habitGrade = gradeFromDailyAverageMinutes(avgMinutes);
   const rangeLabel = `${formatJaMonthDay(week.bounds.startDate)}〜${formatJaMonthDay(week.bounds.endDate)}`;
 
   return (
@@ -39,6 +53,16 @@ export default async function TodayPage() {
         compactEdit
       />
 
+      <WeekProgressCard
+        rangeLabel={rangeLabel}
+        days={week.dayRatings}
+        todayDate={today}
+        habitGrade={habitGrade}
+        avgMinutes={avgMinutes}
+        abilityGrade={board.latest?.grade ?? null}
+        abilityAverage={board.latest?.average ?? null}
+      />
+
       <div id="today-record" className="scroll-mt-4">
         <TodayRecordCard
           logDate={today}
@@ -46,13 +70,6 @@ export default async function TodayPage() {
           initialMinutes={todayLog?.studyMinutes ?? null}
         />
       </div>
-
-      <WeekProgressCard
-        rangeLabel={rangeLabel}
-        days={week.dayRatings}
-        weeklyGoals={week.weeklyGoals.map((g) => ({ content: g.content }))}
-        todayDate={today}
-      />
     </div>
   );
 }

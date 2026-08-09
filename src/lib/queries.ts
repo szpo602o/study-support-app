@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import {
   dailyLogTasks,
   dailyLogs,
+  examScores,
   goals,
   milestones,
   planChanges,
@@ -16,6 +17,8 @@ import {
   weeklyTasks,
 } from "@/db/schema";
 import { getWeekBounds, todayDateString } from "@/lib/dates";
+import { EXAM_TYPE_SHINDANSHI_1ST } from "@/lib/exam-subjects";
+import { gradeFromExamAverage, type LetterGrade } from "@/lib/letter-grade";
 import { timeBucketApproxMinutes, type TimeBucket } from "@/lib/labels";
 import {
   getStudyRating,
@@ -209,6 +212,22 @@ export function summarizeRatings(days: DayRating[]) {
     recorded === 0 ? null : Math.round((circleOrAbove / recorded) * 100);
 
   return { counts, totalMinutes, recorded, circleOrAbove, circleOrAboveRate };
+}
+
+/**
+ * 今週の1日平均（分）。月曜〜今日のうち、入力済みの日だけを平均する。
+ * 未入力は分母・分子に含めない。記録が1日もなければ null。
+ */
+export function averageDailyMinutesThroughToday(
+  days: DayRating[],
+  today: string,
+): number | null {
+  const recorded = days.filter(
+    (d) => d.date <= today && d.minutes !== null,
+  );
+  if (recorded.length === 0) return null;
+  const total = recorded.reduce((sum, d) => sum + (d.minutes as number), 0);
+  return total / recorded.length;
 }
 
 export async function getCurrentWeekContext(userId: string) {
@@ -543,4 +562,68 @@ export async function listWeekHistory(userId: string) {
 
 export function isLateEntry(logDate: string) {
   return todayDateString() > logDate;
+}
+
+export async function listExamScores(
+  userId: string,
+  examType: string = EXAM_TYPE_SHINDANSHI_1ST,
+) {
+  const db = getDb();
+  return db
+    .select()
+    .from(examScores)
+    .where(
+      and(eq(examScores.userId, userId), eq(examScores.examType, examType)),
+    )
+    .orderBy(desc(examScores.year), asc(examScores.subject));
+}
+
+export type ExamYearSummary = {
+  year: number;
+  scoresBySubject: Record<string, number>;
+  average: number | null;
+  grade: LetterGrade | null;
+  belowCutoff: { subject: string; score: number }[];
+};
+
+export function buildExamScoreboard(
+  rows: { year: number; subject: string; score: number }[],
+): {
+  years: number[];
+  byYear: ExamYearSummary[];
+  latest: ExamYearSummary | null;
+} {
+  const yearSet = new Set<number>();
+  const map = new Map<number, Record<string, number>>();
+
+  for (const row of rows) {
+    yearSet.add(row.year);
+    const bucket = map.get(row.year) ?? {};
+    bucket[row.subject] = row.score;
+    map.set(row.year, bucket);
+  }
+
+  const years = [...yearSet].sort((a, b) => b - a);
+  const byYear: ExamYearSummary[] = years.map((year) => {
+    const scoresBySubject = map.get(year) ?? {};
+    const values = Object.values(scoresBySubject);
+    const average =
+      values.length === 0
+        ? null
+        : Math.round((values.reduce((s, n) => s + n, 0) / values.length) * 10) /
+          10;
+    const grade = average === null ? null : gradeFromExamAverage(average);
+    const belowCutoff = Object.entries(scoresBySubject)
+      .filter(([, score]) => score < 40)
+      .map(([subject, score]) => ({ subject, score }))
+      .sort((a, b) => a.score - b.score);
+
+    return { year, scoresBySubject, average, grade, belowCutoff };
+  });
+
+  return {
+    years,
+    byYear,
+    latest: byYear[0] ?? null,
+  };
 }

@@ -63,6 +63,17 @@ export function daysUntil(dateStr: string, from: Date = new Date()) {
   );
 }
 
+/**
+ * 今日を含めた残日数。
+ * 例: 試験が明日なら 2（今日・明日）、当日なら 1。
+ * 試験日を過ぎている場合は負の値（daysUntil と同じ）。
+ */
+export function daysUntilInclusive(dateStr: string, from: Date = new Date()) {
+  const days = daysUntil(dateStr, from);
+  if (days < 0) return days;
+  return days + 1;
+}
+
 export function isDateAfter(a: string, b: string) {
   return a > b;
 }

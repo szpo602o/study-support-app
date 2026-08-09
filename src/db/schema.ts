@@ -316,11 +316,41 @@ export const weeklyGoals = pgTable(
   ],
 );
 
+/** 過去問点数（中小企業診断士1次など）。同一ユーザー・年度・科目は更新 */
+export const examScores = pgTable(
+  "exam_scores",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    examType: text("exam_type").notNull(),
+    year: integer("year").notNull(),
+    subject: text("subject").notNull(),
+    score: integer("score").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("exam_scores_user_type_year_subject_unique").on(
+      table.userId,
+      table.examType,
+      table.year,
+      table.subject,
+    ),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   goals: many(goals),
   weeks: many(weeks),
   studyLogs: many(studyLogs),
   weeklyGoals: many(weeklyGoals),
+  examScores: many(examScores),
 }));
 
 export const goalsRelations = relations(goals, ({ one, many }) => ({

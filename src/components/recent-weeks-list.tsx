@@ -14,8 +14,8 @@ type WeekRow = {
 
 export function RecentWeeksList({ weeks }: { weeks: WeekRow[] }) {
   return (
-    <section className="card p-4">
-      <h2 className="text-sm font-medium text-[var(--color-ink)]">
+    <section className="report-card p-4">
+      <h2 className="section-title section-title-underline text-sm">
         最近4週間
       </h2>
 

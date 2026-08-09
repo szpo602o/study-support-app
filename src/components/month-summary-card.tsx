@@ -27,8 +27,8 @@ export function MonthSummaryCard({
   unrecordedCount: number;
 }) {
   return (
-    <section className="card p-4">
-      <p className="text-xs text-[var(--color-muted)]">
+    <section className="report-card p-4">
+      <p className="school-label border-b border-[color-mix(in_oklab,var(--color-chalkboard)_18%,var(--color-line))] pb-2 text-sm text-[var(--color-chalkboard)]">
         {monthYearLabel}の学習
       </p>
 
